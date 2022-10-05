@@ -11,15 +11,15 @@ export const parseGradesTimetable = async (file) => {
 
   for (let row = 1; row <= sheet.rowCount; row++) {
     for (let column = 1; column <= sheet.columnCount; column++) {
-      const cellValue =  sheet.getCell(row, column).value
+      const cellValue = sheet.getCell(row, column)?.text
 
-      if (typeof cellValue === "string" && cellValue.toLowerCase()?.includes(' класс') && cellValue !== sheet.getCell(row, column - 1).value) {
+      if (typeof cellValue === "string" && cellValue?.toLowerCase()?.includes(' класс') && cellValue !== sheet.getCell(row, column - 1)?.text) {
         grades.push({
           name: cellValue,
           timetable: Array.from({ length: 7 }).map((_, index) => (
             {
-              subject: sheet.getCell(row + index + 1, column).text,
-              classRoom: sheet.getCell(row + index + 1, column + 1).text,
+              subject: sheet.getCell(row + index + 1, column)?.text,
+              classRoom: sheet.getCell(row + index + 1, column + 1)?.text,
             }
           ))
         })
