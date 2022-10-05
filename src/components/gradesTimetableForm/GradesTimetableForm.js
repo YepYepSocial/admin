@@ -6,36 +6,37 @@ import {AppContext} from "../../AppContext";
 import {useNavigate, useParams} from "react-router-dom";
 import Week from "./components/week/Week";
 import {postTimetable} from "../../api/postTimetable";
+import {getGrades} from "../../api/getGrades";
 
 const GradesTimetableForm = () => {
   const {fullTimetable, setFullTimetable, setIsAppLoading} = useContext(AppContext)
   const params = useParams();
 
-  const dayIndex = useMemo(() => {
+  const weekday = useMemo(() => {
     return params.dayIndex
   }, [params])
 
   const gradesTimetable = useMemo(() => {
-    return fullTimetable[dayIndex].gradesTimetable
-  }, [fullTimetable, dayIndex])
+    return fullTimetable[weekday].gradesTimetable
+  }, [fullTimetable, weekday])
 
   const onChange = async (_file) => {
     const gradesTimetable = await parseGradesTimetable(_file);
 
     const newFullTimeTable = [...fullTimetable];
-    newFullTimeTable[dayIndex].gradesTimetable = gradesTimetable;
-    newFullTimeTable[dayIndex].file = _file;
+    newFullTimeTable[weekday].gradesTimetable = gradesTimetable;
+    newFullTimeTable[weekday].file = _file;
 
     setFullTimetable(newFullTimeTable)
   }
 
   const isButtonSaveDisabled = useMemo(() => {
-    return fullTimetable[dayIndex].file === null
-  }, [fullTimetable, dayIndex])
+    return fullTimetable[weekday].file === null
+  }, [fullTimetable, weekday])
 
   const isButtonCancelVisible = useMemo(() => {
-    return fullTimetable[dayIndex].file !== null
-  }, [fullTimetable, dayIndex])
+    return fullTimetable[weekday].file !== null
+  }, [fullTimetable, weekday])
 
   const navigate = useNavigate()
 
@@ -45,17 +46,20 @@ const GradesTimetableForm = () => {
 
   const onCancelClick = () => {
     const newFullTimeTable = [...fullTimetable];
-    newFullTimeTable[dayIndex].gradesTimetable = [];
-    newFullTimeTable[dayIndex].file = null;
+    newFullTimeTable[weekday].gradesTimetable = [];
+    newFullTimeTable[weekday].file = null;
 
     setFullTimetable(newFullTimeTable)
   }
 
-  const onConfirmClick = () => {
+  const onConfirmClick = async () => {
     setIsAppLoading(true);
 
+    const grades = await getGrades();
+
     gradesTimetable.forEach(async (grade) => {
-      await postTimetable(grade.name, dayIndex, grade.timetable)
+      const gradeId = grades.find((_grade) => _grade.gradeName === grade.name).id
+      await postTimetable(gradeId, weekday, grade.timetable)
     })
 
     setIsAppLoading(false);
@@ -65,7 +69,7 @@ const GradesTimetableForm = () => {
     <div>
       <Grid container justifyContent={'center'} direction={"column"} margin={'auto 0'} width={'530px'}>
         <Grid item>
-          <Week dayIndex={dayIndex} onChange={handleChange}/>
+          <Week dayIndex={weekday} onChange={handleChange}/>
         </Grid>
         <Grid item>
           <Grid item height={'500px'} overflow={'auto'}>
@@ -87,7 +91,7 @@ const GradesTimetableForm = () => {
             )) }
           </Grid>
           <Grid item pt={4}>
-            <FileUploader handleChange={onChange} multiply={true} fileOrFiles={fullTimetable[dayIndex].file}/>
+            <FileUploader handleChange={onChange} multiply={true} fileOrFiles={fullTimetable[weekday].file}/>
           </Grid>
           <Grid item container pt={2}>
             <Grid item pr={2}>
