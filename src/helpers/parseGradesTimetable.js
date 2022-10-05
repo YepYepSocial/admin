@@ -11,6 +11,10 @@ export const parseGradesTimetable = async (file) => {
 
   for (let row = 1; row <= sheet.rowCount; row++) {
     for (let column = 1; column <= sheet.columnCount; column++) {
+      if (!sheet.getCell(row, column)?.text) {
+        return;
+      }
+
       const cellValue = sheet.getCell(row, column)?.text
 
       if (typeof cellValue === "string" && cellValue?.toLowerCase()?.includes(' класс') && cellValue !== sheet.getCell(row, column - 1)?.text) {
